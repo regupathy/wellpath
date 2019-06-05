@@ -16,15 +16,13 @@
 %%                    API Functions
 %%================================================================
 
-key_value(Key,Value,Acc) -> ok.
+key_value(Key,Value) -> <<(open_tag(Key))/binary,(to_binary(Value))/binary,(close_tag(Key))/binary>>.
 
 kv_pairs(RootKey,Keys,Values) -> kv_pairs(RootKey,Keys,Values,<<>>).
 kv_pairs(_,_,[],Acc) -> Acc;
 kv_pairs(RootKey,Keys,[Values|Rest],Acc)when length(Keys) == length(Values) ->
-  Acc2 = lists:foldl(fun({Key,Value},Bin) ->
-                <<Bin/binary,(open_tag(Key))/binary,(to_binary(Value))/binary,(close_tag(Key))/binary>>
-              end,<<>>,lists:zip(Keys,Values)),
-  kv_pairs(RootKey,Keys,Rest,<<Acc/binary,(open_tag(RootKey))/binary,Acc2/binary,(close_tag(RootKey))/binary>>);
+  Bin = lists:foldl(fun({Key,Val},Bin) -> <<Bin/binary,(key_value(Key,Val))/binary>>end,<<>>,lists:zip(Keys,Values)),
+  kv_pairs(RootKey,Keys,Rest,<<Acc/binary,(key_value(RootKey,Bin))/binary>>);
 kv_pairs(RootKKeys,Keys,[_|Rest],Acc) -> kv_pairs(RootKKeys,Keys,Rest,Acc).
 
 %%================================================================
@@ -38,5 +36,6 @@ close_tag(Key) -> <<"</",(to_binary(Key))/binary,">">>.
 to_binary(Int) when is_integer(Int) -> integer_to_binary(Int);
 to_binary(Float) when is_float(Float) -> float_to_binary(Float);
 to_binary(String) when is_list(String) -> list_to_binary(String);
+to_binary(Atom) when is_atom(Atom) -> atom_to_binary(Atom,utf8);
 to_binary(Binary) when is_binary(Binary) -> Binary.
 
