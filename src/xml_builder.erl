@@ -8,9 +8,22 @@
 %%%-------------------------------------------------------------------
 -module(xml_builder).
 -author("regupathy").
+-behavior(event_handler).
 
 %% API
 -export([kv_pairs/3]).
+-record(state,{path,data}).
+
+-export([beginning/1,process/2,ending/1]).
+%%================================================================
+%%                    callback Functions
+%%================================================================
+
+beginning([{path,Path}]) ->  {ok,#state{path = Path,data = <<>>}}.
+
+process({new_coordinate,{X,Y,Z}},State) -> {ok,State}.
+
+ending(#state{path = Path,data=Bin}) -> {ok,Fd} = file:open(Path,[write]),file:write(Fd,Bin).
 
 %%================================================================
 %%                    API Functions
@@ -22,7 +35,7 @@ kv_pairs(RootKey,Keys,Values) -> kv_pairs(RootKey,Keys,Values,<<>>).
 kv_pairs(_,_,[],Acc) -> Acc;
 kv_pairs(RootKey,Keys,[Values|Rest],Acc)when length(Keys) == length(Values) ->
   Bin = lists:foldl(fun({Key,Val},Bin) -> <<Bin/binary,(key_value(Key,Val))/binary>>end,<<>>,lists:zip(Keys,Values)),
-  kv_pairs(RootKey,Keys,Rest,<<Acc/binary,(key_value(RootKey,Bin))/binary>>);
+  kv_pairs(RootKey,Keys,Rest,<<Acc/binary,(key_value(RootKey,Bin))/binary,"\n">>);
 kv_pairs(RootKKeys,Keys,[_|Rest],Acc) -> kv_pairs(RootKKeys,Keys,Rest,Acc).
 
 %%================================================================

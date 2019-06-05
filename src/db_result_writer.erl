@@ -4,27 +4,34 @@
 %%% @doc
 %%%
 %%% @end
-%%% Created : 05. Jun 2019 6:17 PM
+%%% Created : 06. Jun 2019 12:35 AM
 %%%-------------------------------------------------------------------
--module(csv_builder).
+-module(db_result_writer).
 -author("regupathy").
 -behavior(event_handler).
+%% API
+-export([]).
+
 -export([beginning/1,process/2,ending/1]).
 
 %%================================================================
 %%                    callback Functions
 %%================================================================
 
-beginning([{path,Path}]) ->  {ok,#state{path = Path,data = <<>>}}.
+beginning(_) ->
+  db_connection:create_result_table("Results"),
+  db_connection:clear_table("Results"),
+  {ok,[]}.
 
-process({new_coordinate,{X,Y,Z}},State) -> {ok,State}.
+process({new_coordinate,{X,Y,Z}},State) ->
+  db_connection:write_in_result({X,Y,Z}),
+  {ok,State}.
 
-ending(State) -> ok.
+ending([]) -> ok.
 
-%%================================================================
+%%===============================================================
 %%                    Internal Functions
 %%================================================================
-
 
 
 
