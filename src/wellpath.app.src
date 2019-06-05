@@ -1,0 +1,19 @@
+%%%-------------------------------------------------------------------
+%%% @author regupathy
+%%% @copyright (C) 2019, <COMPANY>
+%%% @doc
+%%%
+%%% @end
+%%% Created : 05. Jun 2019 2:08 PM
+%%%-------------------------------------------------------------------
+{application, wellpath, [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+    kernel,
+    stdlib
+  ]},
+  {mod, {wellpath, []}},
+  {env, []}
+]}.
