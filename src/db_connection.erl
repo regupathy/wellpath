@@ -32,7 +32,6 @@
 %%%===================================================================
 
 start_link(DbPath) ->
-  io:format("PWD is :~p~n",[os:cmd("pwd")]),
   gen_server:start_link({local, ?SERVER}, ?MODULE, [DbPath], []).
 
 read(TableName) -> gen_server:call(?SERVER,{read,TableName}).
