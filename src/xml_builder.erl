@@ -15,15 +15,19 @@
 -record(state,{path,data}).
 
 -export([beginning/1,process/2,ending/1]).
+
+-define(OutFILE(Path),filename:join(Path,"XMLResult.xml")).
 %%================================================================
 %%                    callback Functions
 %%================================================================
 
-beginning([{path,Path}]) ->  {ok,#state{path = Path,data = <<>>}}.
+beginning([Path]) ->  catch file:delete(?OutFILE(Path)),
+  {ok,#state{path = Path,data = <<>>}}.
 
-process({new_coordinate,{X,Y,Z}},State) -> {ok,State}.
+process({new_coordinate,{X,Y,Z}},#state{data = Acc}= State) ->
+  {ok,State#state{data = kv_pairs("data",["x","y","z"],[{X,Y,Z}],Acc)}}.
 
-ending(#state{path = Path,data=Bin}) -> {ok,Fd} = file:open(Path,[write]),file:write(Fd,Bin).
+ending(#state{path = Path,data=Bin}) -> {ok,Fd} = file:open(?OutFILE(Path),[write]),file:write(Fd,Bin),file:close(Fd).
 
 %%================================================================
 %%                    API Functions

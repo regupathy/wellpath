@@ -70,6 +70,10 @@ handle_cast(event_end, #state{modstates = ModState} =State) ->
   NewModState = lists:map(fun({Mod,A,Stat}) -> Mod:ending(Stat),{Mod,A,[]} end,ModState),
   {noreply,State#state{modstates = NewModState}};
 
+handle_cast({dls,DLS}, State) ->
+  io:format("DLS value is : ~p~n",[DLS]),
+  {noreply, State};
+
 handle_cast(_Request, State) ->
   {noreply, State}.
 

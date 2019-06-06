@@ -24,7 +24,7 @@
 
 -define(SERVER, ?MODULE).
 
--record(state, {db_connection}).
+-record(state, {}).
 
 -define(DB_PATH,"priv/petrolink_chanllenge.db").
 
@@ -33,7 +33,7 @@
 %%%===================================================================
 
 start_link() ->
-  gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+  gen_server:start_link(?MODULE, [], []).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -52,11 +52,13 @@ handle_cast(_Request, State) ->
   {noreply, State}.
 
 handle_info(start, State) ->
+  event_handler:event_begin(),
   List = db_connection:read("Data"),
   [{X,Y,Z}] = db_connection:read("InitialCoordinates"),
   process_data(List,{X,Y,Z}),
   dls_data(List),
-  {noreply, State}.
+  event_handler:event_end(),
+  {stop,normal, State}.
 
 terminate(_Reason, _State) ->
   ok.
