@@ -1,4 +1,4 @@
 # wellpath
 
 To run the application
-    ./rebar3 shell
+        ./rebar3 shell
