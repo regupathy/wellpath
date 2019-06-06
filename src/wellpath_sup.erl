@@ -57,17 +57,17 @@ start_link() ->
   {error, Reason :: term()}).
 init([]) ->
   RestartStrategy = one_for_one,
-  MaxRestarts = 1000,
+  MaxRestarts = 1,
   MaxSecondsBetweenRestarts = 3600,
 
   SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
 
-  Restart = permanent,
+  Restart = transient,
   Shutdown = 2000,
   Type = worker,
 
-  AChild = {'AName', {'AModule', start_link, []},
-    Restart, Shutdown, Type, ['AModule']},
+  AChild = {data_processor, {data_processor, start_link, []},
+    Restart, Shutdown, Type, [data_processor]},
 
   {ok, {SupFlags, [AChild]}}.
 

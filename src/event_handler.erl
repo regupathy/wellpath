@@ -53,6 +53,7 @@ event_end() -> gen_server:cast(?SERVER,event_end).
 %%%===================================================================
 
 init([Path]) ->
+  process_flag(trap_exit,true),
   {ok, #state{path = Path,modstates = [{db_result_writer,Path,[]},{csv_builder,Path,[]},{xml_builder,Path,[]}]}}.
 
 handle_call(_Request, _From, State) ->

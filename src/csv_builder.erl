@@ -17,11 +17,12 @@
 %%                    callback Functions
 %%================================================================
 
-beginning([Path]) ->
+beginning(Path) ->
   catch file:delete(?OutFILE(Path)),
   {ok, File} = file:open(?OutFILE(Path), [write]),
-  csv_gen:row(File, ["Results"]),
-  csv_gen:row(File, ["X","Y","Z"]),
+  csv_gen:row(File, ["!Results"]),
+  csv_gen:row(File, ["!X","Y","Z"]),
+  io:format("CSV output in : ~p~n ",[?OutFILE(Path)]),
   {ok,#state{file = File}}.
 
 process({new_coordinate,{X,Y,Z}},#state{file = File} = State) ->

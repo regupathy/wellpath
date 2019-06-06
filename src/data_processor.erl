@@ -12,7 +12,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/0]).
+-export([start_link/0,do_processing/0]).
 
 %% gen_server callbacks
 -export([init/1,
@@ -26,14 +26,15 @@
 
 -record(state, {}).
 
--define(DB_PATH,"priv/petrolink_chanllenge.db").
+-define(DB_PATH,"priv/petrolink_challenge.db").
 
 %%%===================================================================
 %%% API
 %%%===================================================================
 
-start_link() ->
-  gen_server:start_link(?MODULE, [], []).
+start_link() ->  gen_server:start_link({local,?SERVER},?MODULE, [], []).
+
+do_processing() -> erlang:send(?SERVER,start).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -45,11 +46,9 @@ init([]) ->
   self() ! start,
   {ok, #state{}}.
 
-handle_call(_Request, _From, State) ->
-  {reply, ok, State}.
+handle_call(_Request, _From, State) ->  {reply, ok, State}.
 
-handle_cast(_Request, State) ->
-  {noreply, State}.
+handle_cast(_Request, State) ->  {noreply, State}.
 
 handle_info(start, State) ->
   event_handler:event_begin(),
@@ -58,13 +57,11 @@ handle_info(start, State) ->
   process_data(List,{X,Y,Z}),
   dls_data(List),
   event_handler:event_end(),
-  {stop,normal, State}.
+  {noreply, State}.
 
-terminate(_Reason, _State) ->
-  ok.
+terminate(_Reason, _State) ->  ok.
 
-code_change(_OldVsn, State, _Extra) ->
-  {ok, State}.
+code_change(_OldVsn, State, _Extra) ->  {ok, State}.
 
 %%%===================================================================
 %%% Internal functions

@@ -32,13 +32,14 @@
 %%%===================================================================
 
 start_link(DbPath) ->
+  io:format("PWD is :~p~n",[os:cmd("pwd")]),
   gen_server:start_link({local, ?SERVER}, ?MODULE, [DbPath], []).
 
-read(TableName) ->gen_server:call(?SERVER,{read,TableName}).
+read(TableName) -> gen_server:call(?SERVER,{read,TableName}).
 
-create_result_table(TableName) -> gen_server:call(?SERVER,{create_result_table,TableName}).
+create_result_table(TableName) -> gen_server:cast(?SERVER,{create_result_table,TableName}).
 
-delete_table(Table) -> gen_server:call(?SERVER,{delete_table,Table}).
+delete_table(Table) -> gen_server:cast(?SERVER,{delete_table,Table}).
 
 write_in_result(Value) -> gen_server:cast(?SERVER,{write_in_result,Value}).
 
@@ -48,7 +49,10 @@ clear_table(TableName) -> gen_server:cast(?SERVER,{clear_table,TableName}).
 %%% gen_server callbacks
 %%%===================================================================
 
-init([DbPath]) ->  {ok,Connection} = esqlite3:open(DbPath),
+init([DbPath]) ->
+  process_flag(trap_exit,true),
+  {ok,Connection} = esqlite3:open(DbPath),
+  io:format("Sqlite DB located in : ~p~n ",[DbPath]),
   {ok, #state{connection = Connection}}.
 
 handle_call({read,TableName}, _From, #state{connection = Connection}= State) ->
@@ -60,8 +64,8 @@ handle_cast({create_result_table,TableName},  #state{connection = Connection}= S
   {noreply, State#state{result_table = TableName}};
 
 handle_cast({write_in_result,{X,Y,Z}}, #state{connection = Connection,result_table = Tab}= State) ->
-  [Xstr,Ystr,Zstr] = [float_to_list(X) || X <- [X,Y,Z]],
-  esqlite3:q("INSERT INTO"++Tab++"(x,y,z)VALUES("++Xstr++","++Ystr++","++Zstr++")",Connection),
+  [Xstr,Ystr,Zstr] = [float_to_list(V) || V <- [X,Y,Z]],
+  esqlite3:q("INSERT INTO "++Tab++"(x,y,z) VALUES ("++Xstr++","++Ystr++","++Zstr++")",Connection),
   {noreply, State};
 
 handle_cast({delete_table,TableName}, #state{connection = Connection}= State) ->
